@@ -30,17 +30,40 @@ public class PantallaPrincipal extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnJugar = new javax.swing.JButton();
+        btnSettings = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        btnJugar.setText("Play");
+
+        btnSettings.setText("Settings");
+
+        jButton3.setText("jButton2");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(83, 83, 83)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSettings)
+                    .addComponent(btnJugar)
+                    .addComponent(jButton3))
+                .addContainerGap(86, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(91, 91, 91)
+                .addComponent(btnJugar)
+                .addGap(26, 26, 26)
+                .addComponent(btnSettings)
+                .addGap(26, 26, 26)
+                .addComponent(jButton3)
+                .addContainerGap(90, Short.MAX_VALUE))
         );
 
         pack();
@@ -72,5 +95,8 @@ public class PantallaPrincipal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnJugar;
+    private javax.swing.JButton btnSettings;
+    private javax.swing.JButton jButton3;
     // End of variables declaration//GEN-END:variables
 }
