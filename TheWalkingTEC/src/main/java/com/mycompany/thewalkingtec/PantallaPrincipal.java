@@ -8,6 +8,8 @@ package com.mycompany.thewalkingtec;
  *
  * @author gabos
  */
+
+//Comenario de Pablo ############
 public class PantallaPrincipal extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(PantallaPrincipal.class.getName());
