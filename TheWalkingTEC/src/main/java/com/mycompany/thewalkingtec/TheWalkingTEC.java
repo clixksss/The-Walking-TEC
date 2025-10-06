@@ -11,6 +11,6 @@ package com.mycompany.thewalkingtec;
 public class TheWalkingTEC {
 
     public static void main(String[] args) {
-        System.out.println("Todo listo!");
+        System.out.println("Todo listo, editado con exito!");
     }
 }
