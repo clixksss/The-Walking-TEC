@@ -24,10 +24,10 @@ public class VentajaJuego extends javax.swing.JFrame {
         initComponents();
         configurarUI();
         construirMapa();
-        marcarCentroConReliquia(); // opcional de arranque
+        marcarCentroConReliquia(); 
     }
 private void configurarUI() {
-    // tamaño visual del mapa (ajústalo a gusto)
+    // tamaño visual del mapa 
     panelMapa.setLayout(new GridLayout(TAM, TAM, 1, 1));
     panelMapa.setBackground(Color.DARK_GRAY);
 
@@ -46,7 +46,7 @@ private void configurarUI() {
             JButton b = new JButton();
             b.setMargin(new Insets(0,0,0,0));
             b.setFocusable(false);
-            b.setBackground(Color.WHITE); // VACÍO
+            b.setBackground(Color.WHITE); 
             b.setToolTipText("("+f+","+c+")");
 
             final int fila = f;
@@ -119,19 +119,19 @@ private void limpiarMapa() {
             celdas[f][c].setBackground(Color.WHITE);
         }
     }
-    marcarCentroConReliquia(); // si quieres mantener siempre una reliquia
+    marcarCentroConReliquia();
 }
 private char getCeldaSimbolo(int f, int c) {
     String t = celdas[f][c].getText();
     if (t == null || t.isEmpty()) return '.';
-    return t.charAt(0); // R, B, Z
+    return t.charAt(0); // R, B, A
 }
 private void generarZombiesAleatorios() {
     for (int i = 0; i < 5; i++) {
         int fila = (int) (Math.random() * TAM);
         int col = (int) (Math.random() * TAM);
 
-        // Solo fuera del fuerte (por ejemplo, bordes del mapa)
+        // Solo bordes del mapa
         if (fila == 0 || fila == TAM-1 || col == 0 || col == TAM-1) {
             celdas[fila][col].setText("Z");
             celdas[fila][col].setBackground(Color.RED);
