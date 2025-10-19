@@ -76,7 +76,7 @@ public class PantallaPrincipal extends javax.swing.JFrame {
 
     private void btnJugarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJugarActionPerformed
 
-    Mapa juego = new Mapa();
+    VentajaJuego juego = new VentajaJuego();
     juego.setVisible(true); 
     this.dispose(); 
         
