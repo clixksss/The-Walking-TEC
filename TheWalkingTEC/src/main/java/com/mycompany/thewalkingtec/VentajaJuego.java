@@ -5,7 +5,7 @@
 package com.mycompany.thewalkingtec;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+
 
 /**
  *
@@ -15,7 +15,11 @@ public class VentajaJuego extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentajaJuego.class.getName());
     private static final int TAM = 25;
+    private Army[][] mapaObjetos = new Army[TAM][TAM];
     private JButton[][] celdas = new JButton[TAM][TAM];
+    private java.util.List<Thread> hilosZombies = new java.util.ArrayList<>();
+    private boolean modoBatalla = false;
+
 
     /**
      * Creates new form Mapa
@@ -24,7 +28,7 @@ public class VentajaJuego extends javax.swing.JFrame {
         initComponents();
         configurarUI();
         construirMapa();
-        marcarCentroConReliquia(); 
+        colocarReliquiaCentro(); 
     }
 private void configurarUI() {
     // tamaño visual del mapa 
@@ -64,80 +68,125 @@ private void configurarUI() {
     panelMapa.repaint();
     }
 private void colocarSegunSeleccion(int f, int c) {
+    // Si estamos en modo batalla, no permitir colocar nada
+    if (modoBatalla) return;
+
     JButton b = celdas[f][c];
 
     if (togBorrar.isSelected()) {
-        // Vaciar
+        mapaObjetos[f][c] = null;
         b.setText("");
         b.setBackground(Color.WHITE);
         return;
     }
 
+    Army nuevo = null;
+
     if (togReliquia.isSelected()) {
-        // Solo 1 reliquia: elimina otras si existen
+        // Quitar otra reliquia si ya existe
         quitarReliquiaExistente();
-        b.setText("R");
-        b.setBackground(new Color(0, 170, 0)); // verde
-        return;
+        nuevo = new Reliquia();
+    } 
+    else if (togDefensa.isSelected()) {
+        if (mapaObjetos[f][c] instanceof Reliquia) return;
+        nuevo = new Defensa();
+    } 
+    else if (togArmas.isSelected()) {
+        if (mapaObjetos[f][c] instanceof Reliquia) return;
+        nuevo = new Arma(f, c, mapaObjetos, celdas, TAM);  // ✅ versión con parámetros
     }
 
-    if (togDefensa.isSelected()) {
-        // Evitar pisar reliquia
-        if ("R".equals(b.getText())) return;
-        b.setText("B");
-        b.setBackground(new Color(60, 120, 220)); // azul
-        return;
-    }
-    if (togArmas.isSelected()) {
-        // Evitar pisar reliquia
-        if ("R".equals(b.getText())) return;
-        b.setText("A");
-        b.setBackground(new Color(220, 60, 60)); // rojo
+    // Si se creó algo, colocarlo y pintarlo
+    if (nuevo != null) {
+        mapaObjetos[f][c] = nuevo;
+        b.setText(String.valueOf(nuevo.getSimbolo()));
+        b.setBackground(nuevo.getColor());
+        b.repaint();
+        b.revalidate();
     }
 }
-private void quitarReliquiaExistente() {
+
+
+private boolean quitarReliquiaExistente() {
+    boolean quitada = false;
     for (int f = 0; f < TAM; f++) {
         for (int c = 0; c < TAM; c++) {
-            if ("R".equals(celdas[f][c].getText())) {
-                celdas[f][c].setText("");
-                celdas[f][c].setBackground(Color.WHITE);
+            if (mapaObjetos[f][c] instanceof Reliquia) {
+                mapaObjetos[f][c] = null;
+                JButton b = celdas[f][c];
+                b.setText("");
+                b.setBackground(Color.WHITE);
+                quitada = true;
+            }
+        }
+    }
+    return quitada;
+}
+private void colocarReliquiaCentro() {
+    int centro = TAM / 2;
+    mapaObjetos[centro][centro] = new Reliquia();
+    JButton b = celdas[centro][centro];
+    b.setText("R");
+    b.setBackground(new Color(0,180,0));
+    b.setToolTipText("Reliquia ("+centro+","+centro+") Vida:50");
+}
+
+private void limpiarMapa() {
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            mapaObjetos[f][c] = null;
+            JButton b = celdas[f][c];
+            b.setText("");
+            b.setBackground(Color.WHITE);
+            b.setToolTipText("("+f+","+c+")");
+        }
+    }
+    colocarReliquiaCentro();
+}
+private void generarZombies() {
+    int cantidad = 5; // podés ajustar
+    java.util.Random random = new java.util.Random();
+
+    for (int i = 0; i < cantidad; i++) {
+        int fila, col;
+
+        // Zombies en bordes
+        int lado = random.nextInt(4);
+        if (lado == 0) { fila = 0; col = random.nextInt(TAM); }          // arriba
+        else if (lado == 1) { fila = TAM - 1; col = random.nextInt(TAM);} // abajo
+        else if (lado == 2) { fila = random.nextInt(TAM); col = 0; }      // izquierda
+        else { fila = random.nextInt(TAM); col = TAM - 1; }               // derecha
+
+        // Crear el zombie y ponerlo en el mapa
+        Zombie z = new Zombie(fila, col, mapaObjetos, celdas, TAM);
+        mapaObjetos[fila][col] = z;
+
+        JButton b = celdas[fila][col];
+        b.setText("Z");
+        b.setBackground(z.getColor());
+
+        // Hilo
+        Thread hilo = new Thread(z);
+        hilo.start();
+        hilosZombies.add(hilo);
+    }
+}
+private void activarArmas() {
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            if (mapaObjetos[f][c] instanceof Arma) {
+                Arma arma = (Arma) mapaObjetos[f][c];
+                // Iniciar el hilo de disparo
+                new Thread(arma).start();
             }
         }
     }
 }
 
-private void marcarCentroConReliquia() {
-    int centro = TAM / 2; // 12 para 25
-    JButton b = celdas[centro][centro];
-    b.setText("R");
-    b.setBackground(new Color(0, 170, 0));
+private void bloquearEdicion(boolean activarBatalla) {
+    modoBatalla = activarBatalla;
 }
-private void limpiarMapa() {
-    for (int f = 0; f < TAM; f++) {
-        for (int c = 0; c < TAM; c++) {
-            celdas[f][c].setText("");
-            celdas[f][c].setBackground(Color.WHITE);
-        }
-    }
-    marcarCentroConReliquia();
-}
-private char getCeldaSimbolo(int f, int c) {
-    String t = celdas[f][c].getText();
-    if (t == null || t.isEmpty()) return '.';
-    return t.charAt(0); // R, B, A
-}
-private void generarZombiesAleatorios() {
-    for (int i = 0; i < 5; i++) {
-        int fila = (int) (Math.random() * TAM);
-        int col = (int) (Math.random() * TAM);
 
-        // Solo bordes del mapa
-        if (fila == 0 || fila == TAM-1 || col == 0 || col == TAM-1) {
-            celdas[fila][col].setText("Z");
-            celdas[fila][col].setBackground(Color.RED);
-        }
-    }
-}
 
 
 
@@ -291,7 +340,9 @@ private void generarZombiesAleatorios() {
     }//GEN-LAST:event_togArmasActionPerformed
 
     private void btnZombiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnZombiesActionPerformed
-        generarZombiesAleatorios();
+        bloquearEdicion(true);
+        generarZombies();
+        activarArmas();
     }//GEN-LAST:event_btnZombiesActionPerformed
 
     /**
