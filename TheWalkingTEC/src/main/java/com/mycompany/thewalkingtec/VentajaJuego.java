@@ -144,7 +144,7 @@ private void limpiarMapa() {
     colocarReliquiaCentro();
 }
 private void generarZombies() {
-    int cantidad = 5; // podés ajustar
+    int cantidad = 5; 
     java.util.Random random = new java.util.Random();
 
     for (int i = 0; i < cantidad; i++) {
