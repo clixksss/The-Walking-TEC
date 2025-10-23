@@ -11,64 +11,104 @@ import java.awt.*;
  *
  * @author gabos
  */
-public class VentajaJuego extends javax.swing.JFrame {
+public class VentanaJuego extends javax.swing.JFrame {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentajaJuego.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentanaJuego.class.getName());
     private static final int TAM = 25;
     private Army[][] mapaObjetos = new Army[TAM][TAM];
     private JButton[][] celdas = new JButton[TAM][TAM];
     private java.util.List<Thread> hilosZombies = new java.util.ArrayList<>();
     private boolean modoBatalla = false;
+    private Jugador jugador;
 
 
     /**
      * Creates new form Mapa
      */
-    public VentajaJuego() {
+    public VentanaJuego(Jugador jugador) {
         initComponents();
-        configurarUI();
-        construirMapa();
-        colocarReliquiaCentro(); 
+        this.jugador = jugador;
+        configurarUI();         
+        inicializarNuevoJuego();
+    }
+
+    public VentanaJuego(Jugador jugador, Army[][] mapaCargado) {
+        initComponents();
+        this.jugador = jugador;
+        this.mapaObjetos = mapaCargado;
+        configurarUI(); 
+        construirMapa(); 
+        refrescarMapaVisual(); 
     }
 private void configurarUI() {
-    // tamaño visual del mapa 
     panelMapa.setLayout(new GridLayout(TAM, TAM, 1, 1));
     panelMapa.setBackground(Color.DARK_GRAY);
-
-    // Selección por defecto
+    buttonGroup1.add(togDefensa);
+    buttonGroup1.add(togBorrar);
+    buttonGroup1.add(togReliquia);
+    buttonGroup1.add(togArmas);
     togDefensa.setSelected(true);
 
-    // Acción limpiar
     if (btnLimpiar != null) {
         btnLimpiar.addActionListener(e -> limpiarMapa());
     }
     }
-    private void construirMapa() {
-    // Crea 25x25 botones y los agrega al panel
+private void construirMapa() {
+    panelMapa.removeAll();
+    panelMapa.setLayout(new GridLayout(TAM, TAM, 1, 1));
+    panelMapa.setBackground(Color.DARK_GRAY);
+
     for (int f = 0; f < TAM; f++) {
         for (int c = 0; c < TAM; c++) {
             JButton b = new JButton();
             b.setMargin(new Insets(0,0,0,0));
             b.setFocusable(false);
-            b.setBackground(Color.WHITE); 
-            b.setToolTipText("("+f+","+c+")");
+            b.setBackground(Color.WHITE);
+            b.setToolTipText("(" + f + "," + c + ")");
 
-            final int fila = f;
-            final int col  = c;
-
-            b.addActionListener(evt -> {
-                colocarSegunSeleccion(fila, col);
-            });
+            final int fila = f, col = c;
+            b.addActionListener(evt -> colocarSegunSeleccion(fila, col));
 
             celdas[f][c] = b;
             panelMapa.add(b);
         }
     }
+
     panelMapa.revalidate();
     panelMapa.repaint();
+}
+private void inicializarNuevoJuego() {
+    construirMapa();
+    colocarReliquiaCentro();
+    configurarUI();
+    JOptionPane.showMessageDialog(this, "Nivel " + jugador.getNivelActual() + " iniciado.");
+}
+private void reconstruirMapa() {
+    construirMapa();
+    refrescarMapaVisual();
+    JOptionPane.showMessageDialog(this, "Partida de " + jugador.getNombre() + " cargada (Nivel " + jugador.getNivelActual() + ")");
+}
+public void refrescarMapaVisual() {
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            JButton boton = celdas[f][c];
+            Army elemento = mapaObjetos[f][c];
+
+            if (elemento == null) {
+                boton.setText("");
+                boton.setBackground(Color.WHITE);
+            } else {
+                boton.setText(String.valueOf(elemento.getSimbolo()));
+                boton.setBackground(elemento.getColor());
+            }
+
+            boton.repaint();
+            boton.revalidate();
+        }
     }
+}
+
 private void colocarSegunSeleccion(int f, int c) {
-    // Si estamos en modo batalla, no permitir colocar nada
     if (modoBatalla) return;
 
     JButton b = celdas[f][c];
@@ -83,7 +123,6 @@ private void colocarSegunSeleccion(int f, int c) {
     Army nuevo = null;
 
     if (togReliquia.isSelected()) {
-        // Quitar otra reliquia si ya existe
         quitarReliquiaExistente();
         nuevo = new Reliquia();
     } 
@@ -93,10 +132,9 @@ private void colocarSegunSeleccion(int f, int c) {
     } 
     else if (togArmas.isSelected()) {
         if (mapaObjetos[f][c] instanceof Reliquia) return;
-        nuevo = new Arma(f, c, mapaObjetos, celdas, TAM);  // ✅ versión con parámetros
+        nuevo = new Arma(f, c, mapaObjetos, celdas, TAM);  
     }
 
-    // Si se creó algo, colocarlo y pintarlo
     if (nuevo != null) {
         mapaObjetos[f][c] = nuevo;
         b.setText(String.valueOf(nuevo.getSimbolo()));
@@ -200,6 +238,7 @@ private void bloquearEdicion(boolean activarBatalla) {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         panelMapa = new javax.swing.JPanel();
         panelControles = new javax.swing.JPanel();
         togDefensa = new javax.swing.JToggleButton();
@@ -208,6 +247,7 @@ private void bloquearEdicion(boolean activarBatalla) {
         btnLimpiar = new javax.swing.JButton();
         togArmas = new javax.swing.JToggleButton();
         btnZombies = new javax.swing.JButton();
+        btnGuardarPartida = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -221,7 +261,7 @@ private void bloquearEdicion(boolean activarBatalla) {
         );
         panelMapaLayout.setVerticalGroup(
             panelMapaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 574, Short.MAX_VALUE)
         );
 
         togDefensa.setText("Defensa");
@@ -261,12 +301,19 @@ private void bloquearEdicion(boolean activarBatalla) {
             }
         });
 
+        btnGuardarPartida.setText("Guardar Partida");
+        btnGuardarPartida.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuardarPartidaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelControlesLayout = new javax.swing.GroupLayout(panelControles);
         panelControles.setLayout(panelControlesLayout);
         panelControlesLayout.setHorizontalGroup(
             panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelControlesLayout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
+                .addContainerGap(21, Short.MAX_VALUE)
                 .addGroup(panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelControlesLayout.createSequentialGroup()
                         .addGroup(panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -274,6 +321,9 @@ private void bloquearEdicion(boolean activarBatalla) {
                             .addComponent(togDefensa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(togReliquia, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(togArmas, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelControlesLayout.createSequentialGroup()
+                        .addComponent(btnGuardarPartida)
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelControlesLayout.createSequentialGroup()
                         .addGroup(panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -296,7 +346,9 @@ private void bloquearEdicion(boolean activarBatalla) {
                 .addComponent(btnZombies)
                 .addGap(18, 18, 18)
                 .addComponent(btnLimpiar)
-                .addContainerGap(243, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 194, Short.MAX_VALUE)
+                .addComponent(btnGuardarPartida)
+                .addGap(22, 22, 22))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -311,13 +363,13 @@ private void bloquearEdicion(boolean activarBatalla) {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelMapa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(panelControles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 36, Short.MAX_VALUE)))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(panelMapa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelControles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -345,34 +397,31 @@ private void bloquearEdicion(boolean activarBatalla) {
         activarArmas();
     }//GEN-LAST:event_btnZombiesActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new VentajaJuego().setVisible(true));
+    private void btnGuardarPartidaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarPartidaActionPerformed
+    if (jugador == null) {
+        JOptionPane.showMessageDialog(this, "⚠️ No hay ningún jugador activo para guardar.");
+        return;
     }
 
+    try {
+        GestorJSON.guardarPartida(jugador, mapaObjetos, TAM);
+        JOptionPane.showMessageDialog(this, 
+            "💾 Partida guardada correctamente.\nJugador: " + jugador.getNombre() +
+            "\nNivel: " + jugador.getNivelActual());
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, 
+            "❌ Error al guardar la partida:\n" + e.getMessage());
+        e.printStackTrace();
+    }
+    }//GEN-LAST:event_btnGuardarPartidaActionPerformed
+
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnGuardarPartida;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnZombies;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel panelControles;
     private javax.swing.JPanel panelMapa;
     private javax.swing.JToggleButton togArmas;

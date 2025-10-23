@@ -22,7 +22,7 @@ public class Arma extends Army implements Runnable {
     private JButton[][] celdas;
     private boolean activa = true;
     private int tam;
-
+    
     public Arma(int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam) {
         super(15, 5, new Color(220, 200, 60), 'A');
         this.fila = fila;
@@ -31,6 +31,10 @@ public class Arma extends Army implements Runnable {
         this.celdas = celdas;
         this.tam = tam;
     }
+    public Arma() {
+        super(15, 5, new Color(220, 200, 60), 'A');
+    }
+    
 
     @Override
     public void atacar(Army objetivo) {
