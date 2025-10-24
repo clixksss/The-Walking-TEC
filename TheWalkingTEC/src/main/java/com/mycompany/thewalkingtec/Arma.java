@@ -22,7 +22,10 @@ public class Arma extends Army implements Runnable {
     private JButton[][] celdas;
     private boolean activa = true;
     private int tam;
-    
+    private static int dañoBase = 5;
+
+    public static void setDañoBase(int d) { dañoBase = d; }
+
     public Arma(int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam) {
         super(15, 5, new Color(220, 200, 60), 'A');
         this.fila = fila;

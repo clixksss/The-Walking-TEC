@@ -36,10 +36,27 @@ public class VentanaJuego extends javax.swing.JFrame {
         initComponents();
         this.jugador = jugador;
         this.mapaObjetos = mapaCargado;
-        configurarUI(); 
-        construirMapa(); 
-        refrescarMapaVisual(); 
+
+        configurarUI();
+        construirMapa();
+        refrescarMapaVisual();
+
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                guardarPartidaAutomatica();
+            }
+        });
     }
+private void guardarPartidaAutomatica() {
+    if (jugador == null) return;
+    try {
+        GestorJSON.guardarPartida(jugador, mapaObjetos, TAM);
+        System.out.println("💾 Partida guardada automáticamente: " + jugador.getNombre());
+    } catch (Exception e) {
+        System.err.println("⚠️ Error al guardar automáticamente: " + e.getMessage());
+    }
+}
 private void configurarUI() {
     panelMapa.setLayout(new GridLayout(TAM, TAM, 1, 1));
     panelMapa.setBackground(Color.DARK_GRAY);
@@ -224,6 +241,41 @@ private void activarArmas() {
 private void bloquearEdicion(boolean activarBatalla) {
     modoBatalla = activarBatalla;
 }
+private boolean hayZombiesVivos() {
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            if (mapaObjetos[f][c] instanceof Zombie) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+private void nivelCompletado() {
+    jugador.subirNivel();
+    JOptionPane.showMessageDialog(this,
+        "🎉 ¡Nivel superado!\nAvanzas al nivel " + jugador.getNivelActual());
+
+    GestorJSON.guardarPartida(jugador, mapaObjetos, TAM);
+
+    aumentarDificultad();
+
+    limpiarMapa();
+
+    bloquearEdicion(false);
+}
+
+private void aumentarDificultad() {
+    int nivel = jugador.getNivelActual();
+
+    Zombie.setVidaBase(100 + nivel * 20);
+    Zombie.setDañoBase(5 + nivel * 2);
+
+    Arma.setDañoBase(5 + nivel * 3);
+
+    System.out.println("💀 Nivel " + nivel + ": zombies más fuertes, armas más potentes.");
+}
+
 
 
 
@@ -395,6 +447,17 @@ private void bloquearEdicion(boolean activarBatalla) {
         bloquearEdicion(true);
         generarZombies();
         activarArmas();
+    new Thread(() -> {
+        try {
+            while (true) {
+                Thread.sleep(2000); 
+                if (!hayZombiesVivos()) {
+                    nivelCompletado();
+                    break;
+                }
+            }
+        } catch (InterruptedException ignored) {}
+    }).start();
     }//GEN-LAST:event_btnZombiesActionPerformed
 
     private void btnGuardarPartidaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarPartidaActionPerformed

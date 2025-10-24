@@ -4,18 +4,19 @@
  */
 package com.mycompany.thewalkingtec;
 
+import java.io.Serializable;
+
 /**
  *
  * @author gabos
  */
 
-public class Jugador {
+public class Jugador implements Serializable {
     private String nombre;
-    private int nivelActual;
+    private int nivelActual = 1;
 
     public Jugador(String nombre) {
         this.nombre = nombre;
-        this.nivelActual = 1;
     }
 
     public String getNombre() { return nombre; }

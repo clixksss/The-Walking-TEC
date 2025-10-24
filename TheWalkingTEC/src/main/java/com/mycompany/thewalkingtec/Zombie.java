@@ -20,6 +20,8 @@ public class Zombie extends Army implements Runnable {
     private JButton[][] celdas;
     private boolean activo = true;
     private int tam;
+    private static int vidaBase = 100;
+    private static int dañoBase = 5;
 
     public Zombie(int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam) {
         super(10, 10, new Color(220, 60, 60), 'Z');
@@ -100,6 +102,8 @@ public class Zombie extends Army implements Runnable {
             }
         }
     }
+    public static void setVidaBase(int v) { vidaBase = v; }
+    public static void setDañoBase(int d) { dañoBase = d; }
 
     public void detener() { activo = false; }
 }
