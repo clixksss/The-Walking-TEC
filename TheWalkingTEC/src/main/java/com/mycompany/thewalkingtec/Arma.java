@@ -13,72 +13,69 @@ import java.awt.Color;
 import java.awt.Color;
 import javax.swing.JButton;
 
-public class Arma extends Army implements Runnable {
-    private int daño = 10;
-    private int rango = 3;  // en celdas
-    private int fila;
-    private int columna;
-    private Army[][] mapa;
-    private JButton[][] celdas;
-    private boolean activa = true;
-    private int tam;
-    private static int dañoBase = 5;
+public abstract class Arma extends Army implements Runnable {
+    protected int daño;
+    protected int rango;
+    protected int fila;
+    protected int columna;
+    protected Army[][] mapa;
+    protected JButton[][] celdas;
+    protected boolean activa = true;
+    protected int tam;
+    protected static int dañoBase = 5;
 
     public static void setDañoBase(int d) { dañoBase = d; }
 
-    public Arma(int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam) {
-        super(15, 5, new Color(220, 200, 60), 'A');
+    public Arma(int vida, int daño, Color color, char simbolo, 
+                int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam, int rango) {
+        super(vida, daño, color, simbolo);
+        this.daño = daño;
+        this.rango = rango;
         this.fila = fila;
         this.columna = columna;
         this.mapa = mapa;
         this.celdas = celdas;
         this.tam = tam;
     }
-    public Arma() {
-        super(15, 5, new Color(220, 200, 60), 'A');
-    }
-    
 
     @Override
-    public void atacar(Army objetivo) {
-        if (objetivo != null && objetivo instanceof Zombie) {
-            objetivo.recibirGolpe(daño);
-        }
-    }
+    public abstract void atacar(Army objetivo);
 
     @Override
     public void run() {
         try {
             while (activa && this.getVida() > 0) {
-                buscarYAtacarZombies();
-                Thread.sleep(1000); // velocidad de disparo (1 seg)
+                for (int f = Math.max(0, fila - rango); f <= Math.min(tam - 1, fila + rango); f++) {
+                    for (int c = Math.max(0, columna - rango); c <= Math.min(tam - 1, columna + rango); c++) {
+                        Army posible = mapa[f][c];
+
+                        if (posible instanceof Zombie z) {
+                            atacar(z);
+
+                            if (!z.estaVivo()) {
+                                z.detener(); 
+                                mapa[f][c] = null; 
+                                celdas[f][c].setText("");
+                                celdas[f][c].setBackground(Color.WHITE);
+                                celdas[f][c].repaint();
+                                celdas[f][c].revalidate();
+
+                                System.out.println("💀 Zombie eliminado en (" + f + "," + c + ")");
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                Thread.sleep(1000); 
             }
         } catch (InterruptedException e) {
-            System.out.println("Arma interrumpida");
+            System.out.println("⚠️ Arma interrumpida");
         }
     }
 
-    private void buscarYAtacarZombies() {
-        for (int f = Math.max(0, fila - rango); f <= Math.min(tam - 1, fila + rango); f++) {
-            for (int c = Math.max(0, columna - rango); c <= Math.min(tam - 1, columna + rango); c++) {
-                Army posible = mapa[f][c];
-                if (posible instanceof Zombie) {
-                    atacar(posible);
+    protected abstract void buscarYAtacar();
 
-                    // Si muere, limpiar visualmente
-                    if (!posible.estaVivo()) {
-                        mapa[f][c] = null;
-                        celdas[f][c].setText("");
-                        celdas[f][c].setBackground(Color.WHITE);
-                        celdas[f][c].repaint();
-                    }
-                    return; // ataca solo a un zombie por turno
-                }
-            }
-        }
-    }
-
-    public void detener() {
-        activa = false;
-    }
+    public void detener() { activa = false; }
 }

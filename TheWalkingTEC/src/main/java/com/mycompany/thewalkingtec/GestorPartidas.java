@@ -16,7 +16,7 @@ public class GestorPartidas {
         try (ObjectOutputStream out = new ObjectOutputStream(
                 new FileOutputStream("partida_" + partida.getJugador().getNombre() + ".dat"))) {
             out.writeObject(partida);
-            System.out.println("✅ Partida guardada correctamente.");
+            System.out.println(" Partida guardada correctamente.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -26,10 +26,10 @@ public class GestorPartidas {
         try (ObjectInputStream in = new ObjectInputStream(
                 new FileInputStream("partida_" + nombreJugador + ".dat"))) {
             Partida partida = (Partida) in.readObject();
-            System.out.println("✅ Partida cargada de " + nombreJugador);
+            System.out.println(" Partida cargada de " + nombreJugador);
             return partida;
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("⚠️ No se pudo cargar la partida de " + nombreJugador);
+            System.out.println("️ No se pudo cargar la partida de " + nombreJugador);
             return null;
         }
     }

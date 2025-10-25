@@ -23,6 +23,10 @@ public class Reliquia extends Army {
     public void atacar(Army obj){
         
     }
+    @Override
+    public int getFila() { return 0; }
+    @Override
+    public int getColumna() { return 0; }
     
     
 }
