@@ -132,5 +132,45 @@ public class GestorJSON {
 
         return mapa;
     }
+    // ===================== CARGAR MAPA =====================
+public static ComponenteConfig leerComponente(String ruta) {
+    ComponenteConfig cfg = new ComponenteConfig();
+
+    try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
+        String linea;
+        while ((linea = br.readLine()) != null) {
+            linea = linea.trim();
+            if (!linea.contains(":")) continue;
+
+            String[] partes = linea.split(":", 2);
+            if (partes.length < 2) continue;
+
+            String clave = partes[0].replace("\"", "").trim();
+            String valor = partes[1].replace("\"", "").replace(",", "").trim();
+
+            switch (clave) {
+                case "id" -> cfg.id = valor;
+                case "nombre" -> cfg.nombre = valor;
+                case "imagenIdle" -> cfg.imagenIdle = valor;
+                case "imagenAttack" -> cfg.imagenAttack = valor;
+                case "vidaMax" -> cfg.vidaMax = Integer.parseInt(valor);
+                case "golpesPorSegundo" -> cfg.golpesPorSegundo = Integer.parseInt(valor);
+                case "espacios" -> cfg.espacios = Integer.parseInt(valor);
+                case "nivelAparicion" -> cfg.nivelAparicion = Integer.parseInt(valor);
+                case "nivel" -> cfg.nivel = Integer.parseInt(valor);
+                case "_class" -> cfg._class = valor;
+                case "tipo" -> cfg.tipo = Integer.parseInt(valor);
+            }
+        }
+
+        System.out.println("✅ Componente cargado: " + cfg.nombre + " (" + cfg._class + ") tipo=" + cfg.tipo);
+    } catch (IOException e) {
+        System.err.println("❌ Error al leer componente: " + e.getMessage());
+    } catch (NumberFormatException nfe) {
+        System.err.println("⚠️ Error de formato numérico en JSON: " + nfe.getMessage());
+    }
+
+    return cfg;}
 }
+
 

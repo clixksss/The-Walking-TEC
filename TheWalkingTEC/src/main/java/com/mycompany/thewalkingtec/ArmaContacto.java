@@ -15,6 +15,9 @@ public class ArmaContacto extends Arma {
     public ArmaContacto(int f, int c, Army[][] m, JButton[][] celdas, int tam) {
         super(20, 10, new Color(60, 200, 60), 'C', f, c, m, celdas, tam, 1);
     }
+    public ArmaContacto(int vida,int dano,int rango,int f, int c, Army[][] m, JButton[][] celdas, int tam) {
+        super(vida, dano, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, rango);
+    }
 
     @Override
     public void atacar(Army objetivo) {

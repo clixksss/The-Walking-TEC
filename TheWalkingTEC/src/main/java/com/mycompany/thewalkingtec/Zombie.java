@@ -27,9 +27,7 @@ public abstract class Zombie extends Army implements Runnable {
     protected static int vidaBase = 30;
     protected static int dañoBase = 5;
 
-    public Zombie(int vida, int daño, Color color, char simbolo,
-                  int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam,
-                  int velocidad, int nivelAparicion) {
+    public Zombie(int vida, int daño, Color color, char simbolo,int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam, int velocidad, int nivelAparicion) {
 
         super(vida, daño, color, simbolo);
         this.fila = fila;

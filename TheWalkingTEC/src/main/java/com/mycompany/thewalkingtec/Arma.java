@@ -26,8 +26,7 @@ public abstract class Arma extends Army implements Runnable {
 
     public static void setDañoBase(int d) { dañoBase = d; }
 
-    public Arma(int vida, int daño, Color color, char simbolo, 
-                int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam, int rango) {
+    public Arma(int vida, int daño, Color color, char simbolo,int fila, int columna, Army[][] mapa, JButton[][] celdas, int tam, int rango) {
         super(vida, daño, color, simbolo);
         this.daño = daño;
         this.rango = rango;

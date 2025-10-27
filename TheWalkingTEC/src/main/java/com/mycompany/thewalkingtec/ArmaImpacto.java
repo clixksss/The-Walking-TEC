@@ -17,6 +17,9 @@ public class ArmaImpacto extends Arma {
     public ArmaImpacto(int f, int c, Army[][] m, JButton[][] celdas, int tam) {
         super(10, 15, new Color(255, 140, 60), 'I', f, c, m, celdas, tam, 0);
     }
+    public ArmaImpacto(int vida,int dano,int rango,int f, int c, Army[][] m, JButton[][] celdas, int tam) {
+        super(vida, dano, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, rango);
+    }
 
     @Override
     public void atacar(Army z) {}

@@ -18,6 +18,10 @@ public class ZombieMediano extends Zombie {
     public ZombieMediano(int f, int c, Army[][] m, JButton[][] celdas, int tam) {
         super(90, 5, new Color(255, 220, 60), 'M', f, c, m, celdas, tam, 700, 5);
     }
+    public ZombieMediano(int vida,int dano,int nivelApa,int f, int c, Army[][] m, JButton[][] celdas, int tam) {
+        super(vida, dano, new Color(120, 180, 255), '.', f, c, m, celdas, tam, 450, nivelApa);
+    }
+
 
     @Override
     public void atacar(Army objetivo) {

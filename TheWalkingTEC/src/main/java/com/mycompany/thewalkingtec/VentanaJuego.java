@@ -5,6 +5,7 @@
 package com.mycompany.thewalkingtec;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 
 /**
@@ -186,13 +187,42 @@ public void refrescarMapaVisual() {
     panelMapa.repaint();
     panelMapa.revalidate();
 }
+private Army crearArmaDesdeConfig(ComponenteConfig cfg, int f, int c) {
+    if (cfg == null || cfg._class == null) return null;
+
+    // tipo == 0 → arma, tipo == 1 → zombie
+    if (cfg.tipo == 0) {
+        return switch (cfg._class) {
+            case "Component_creator.Contacto" -> new ArmaContacto(cfg.vidaMax,cfg.golpesPorSegundo,1,f, c, mapaObjetos, celdas, TAM);
+            case "Component_creator.Mediano" -> new ArmaMediano(cfg.vidaMax,cfg.golpesPorSegundo,4,f, c, mapaObjetos, celdas, TAM);
+            case "Component_creator.Aereo" -> new ArmaAerea(cfg.vidaMax,cfg.golpesPorSegundo,10,f, c, mapaObjetos, celdas, TAM);
+            case "Component_creator.Impacto" -> new ArmaImpacto(cfg.vidaMax,cfg.golpesPorSegundo,1,f, c, mapaObjetos, celdas, TAM);
+            case "Component_creator.Multiple" -> new ArmaMultiple(cfg.vidaMax,cfg.golpesPorSegundo,5,f, c, mapaObjetos, celdas, TAM);
+            default -> {
+                System.err.println("⚠️ Tipo de arma no reconocido: " + cfg._class);
+                yield null;
+            }
+        };
+    } 
+    else {
+        return switch (cfg._class) {
+            case "Component_creator.Contacto" -> new ZombieContacto(cfg.vidaMax,cfg.golpesPorSegundo,cfg.nivelAparicion,f, c, mapaObjetos, celdas, TAM);
+            case "Component_creator.Mediano" -> new ZombieMediano(cfg.vidaMax,cfg.golpesPorSegundo,cfg.nivelAparicion,f, c, mapaObjetos, celdas, TAM);
+            case "Component_creator.Aereo" -> new ZombieAereo(cfg.vidaMax,cfg.golpesPorSegundo,cfg.nivelAparicion,f, c, mapaObjetos, celdas, TAM);
+            case "Component_creator.Choque" -> new ZombieChoque(cfg.vidaMax,cfg.golpesPorSegundo,cfg.nivelAparicion,f, c, mapaObjetos, celdas, TAM);
+            default -> {
+                System.err.println("⚠️ Tipo de zombie no reconocido: " + cfg._class);
+                yield null;
+            }
+        };
+    }
+}
 
 private void colocarSegunSeleccion(int f, int c) {
     if (modoBatalla) return;
 
     JButton b = celdas[f][c];
 
-    
     if (togBorrar.isSelected()) {
         mapaObjetos[f][c] = null;
         b.setText("");
@@ -202,17 +232,14 @@ private void colocarSegunSeleccion(int f, int c) {
 
     Army nuevo = null;
 
-    
     if (togReliquia.isSelected()) {
         quitarReliquiaExistente();
         nuevo = new Reliquia();
-    }
-
+    } 
     else if (togDefensa.isSelected()) {
         if (mapaObjetos[f][c] instanceof Reliquia) return;
-        nuevo = new Defensa(); 
-    }
-
+        nuevo = new Defensa();
+    } 
     else if (togArmas.isSelected()) {
         if (mapaObjetos[f][c] instanceof Reliquia) return;
 
@@ -221,7 +248,8 @@ private void colocarSegunSeleccion(int f, int c) {
             "De mediano alcance",
             "Aérea",
             "De impacto (mina)",
-            "De ataque múltiple"
+            "De ataque múltiple",
+            "📂 Cargar desde archivo JSON"
         };
 
         String seleccion = (String) JOptionPane.showInputDialog(
@@ -247,6 +275,17 @@ private void colocarSegunSeleccion(int f, int c) {
                 nuevo = new ArmaImpacto(f, c, mapaObjetos, celdas, TAM);
             case "De ataque múltiple" ->
                 nuevo = new ArmaMultiple(f, c, mapaObjetos, celdas, TAM);
+            case "📂 Cargar desde archivo JSON" -> {
+                JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle("Seleccionar componente JSON");
+                if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                    File archivo = fc.getSelectedFile();
+                    ComponenteConfig comp = GestorJSON.leerComponente(archivo.getAbsolutePath());
+                    if (comp != null) {
+                        nuevo = crearArmaDesdeConfig(comp, f, c);
+                    }
+                }
+            }
         }
     }
 
@@ -258,6 +297,7 @@ private void colocarSegunSeleccion(int f, int c) {
         b.revalidate();
     }
 }
+
 
 
 

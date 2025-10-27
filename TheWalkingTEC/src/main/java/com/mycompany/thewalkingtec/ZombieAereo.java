@@ -16,6 +16,10 @@ public class ZombieAereo extends Zombie {
     public ZombieAereo(int f, int c, Army[][] m, JButton[][] celdas, int tam) {
         super(80, 6, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, 450, 3);
     }
+    public ZombieAereo(int vida,int dano,int nivelApa,int f, int c, Army[][] m, JButton[][] celdas, int tam) {
+        super(vida, dano, new Color(120, 180, 255), '.', f, c, m, celdas, tam, 450, nivelApa);
+    }
+    
 
     @Override
     public void atacar(Army objetivo) {

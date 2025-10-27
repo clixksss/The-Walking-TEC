@@ -15,6 +15,9 @@ public class ArmaAerea extends Arma {
     public ArmaAerea(int f, int c, Army[][] m, JButton[][] celdas, int tam) {
         super(10, 12, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, 10);
     }
+    public ArmaAerea(int vida,int dano,int rango,int f, int c, Army[][] m, JButton[][] celdas, int tam) {
+        super(vida, dano, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, rango);
+    }
 
     @Override
     public void atacar(Army objetivo) {
