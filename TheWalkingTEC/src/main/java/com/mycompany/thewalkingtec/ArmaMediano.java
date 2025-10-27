@@ -21,7 +21,7 @@ public class ArmaMediano extends Arma {
 
     @Override
     public void atacar(Army objetivo) {
-        if (!(objetivo instanceof Zombie z)) return;
+        if (!(objetivo instanceof Zombie z ) || objetivo instanceof ZombieAereo) return;
 
         z.recibirGolpe(daño, this);
         registrarAtaque(z, daño);

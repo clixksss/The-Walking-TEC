@@ -11,6 +11,12 @@ package com.mycompany.thewalkingtec;
 
 import java.io.*;
 import javax.swing.JButton;
+import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 public class GestorJSON {
 
@@ -171,6 +177,29 @@ public static ComponenteConfig leerComponente(String ruta) {
     }
 
     return cfg;}
+    public static ArrayList cargarZombiesDisponibles(File carpeta, int nivelActual) {
+    ArrayList disponibles = new ArrayList();
+
+    if (carpeta == null || !carpeta.exists() || !carpeta.isDirectory()) {
+        System.err.println("⚠️ Carpeta no válida: " + (carpeta != null ? carpeta.getAbsolutePath() : "null"));
+        return disponibles;
+    }
+
+    File[] archivos = carpeta.listFiles((dir, name) -> name.endsWith(".json"));
+    if (archivos == null) return disponibles;
+
+    for (File f : archivos) {
+        ComponenteConfig cfg = leerComponente(f.getAbsolutePath());
+        if (cfg != null && cfg.tipo == 1 && cfg.nivelAparicion <= nivelActual) {
+            disponibles.add(cfg);
+        }
+    }
+
+    System.out.println("✅ Zombies disponibles para nivel " + nivelActual + ": " + disponibles.size());
+    return disponibles;
+}
+
+
 }
 
 

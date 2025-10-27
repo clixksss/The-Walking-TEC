@@ -12,18 +12,23 @@ import javax.swing.JButton;
  * @author gabos
  */
 public class ZombieAereo extends Zombie {
+    private static int nivelAparicion = 5;
 
     public ZombieAereo(int f, int c, Army[][] m, JButton[][] celdas, int tam) {
         super(80, 6, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, 450, 3);
     }
     public ZombieAereo(int vida,int dano,int nivelApa,int f, int c, Army[][] m, JButton[][] celdas, int tam) {
-        super(vida, dano, new Color(120, 180, 255), '.', f, c, m, celdas, tam, 450, nivelApa);
+        super(vida, dano, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, 450, nivelApa);
+    }
+
+    public static int getNivelAparicion() {
+        return nivelAparicion;
     }
     
-
+    
     @Override
     public void atacar(Army objetivo) {
-        if (objetivo instanceof Reliquia || objetivo instanceof Defensa) {
+        if ((objetivo instanceof Reliquia || objetivo instanceof Defensa || objetivo instanceof Arma)) {
             objetivo.recibirGolpe(daño, this);
             registrarAtaque(objetivo, daño);
         }
@@ -48,8 +53,10 @@ public class ZombieAereo extends Zombie {
             atacar(objetivo);
         }
     }
+    
     @Override
     public int getFila() { return fila; }
     @Override
     public int getColumna() { return columna; }
+    
 }

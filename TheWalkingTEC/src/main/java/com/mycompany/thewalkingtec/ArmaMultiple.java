@@ -23,7 +23,7 @@ public class ArmaMultiple extends Arma {
 
     @Override
     public void atacar(Army objetivo) {
-        if (!(objetivo instanceof Zombie z)) return;
+        if (!(objetivo instanceof Zombie z ) || objetivo instanceof ZombieAereo) return;
 
         z.recibirGolpe(daño, this);
         registrarAtaque(z, daño);
@@ -44,7 +44,7 @@ public class ArmaMultiple extends Arma {
         for (int f = Math.max(0, fila - rango); f <= Math.min(tam - 1, fila + rango); f++) {
             for (int c = Math.max(0, columna - rango); c <= Math.min(tam - 1, columna + rango); c++) {
                 Army posible = mapa[f][c];
-                if (posible instanceof Zombie) {
+                if (posible instanceof Zombie && !(posible instanceof ZombieAereo)) {
                     atacar(posible);
                     realizados++;
                     if (realizados >= disparos) return;

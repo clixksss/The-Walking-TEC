@@ -77,20 +77,26 @@ public abstract class Zombie extends Army implements Runnable {
     protected abstract void moverYAtacar();
 
     protected void moverA(int nuevaFila, int nuevaCol) {
+        if (nuevaFila < 0 || nuevaFila >= tam || nuevaCol < 0 || nuevaCol >= tam) return;
+
+        Army destino = mapa[nuevaFila][nuevaCol];
+        if (destino instanceof Zombie && destino != this) {
+            return; // ❌ Evita colisión
+        }
+
         mapa[fila][columna] = null;
         celdas[fila][columna].setBackground(Color.WHITE);
         celdas[fila][columna].setText("");
 
         fila = nuevaFila;
         columna = nuevaCol;
-
         mapa[fila][columna] = this;
-        celdas[fila][columna].setBackground(this.getColor());
-        celdas[fila][columna].setText(String.valueOf(this.getSimbolo()));
+
+        celdas[fila][columna].setBackground(getColor());
+        celdas[fila][columna].setText(String.valueOf(getSimbolo()));
     }
 
 
-    public int getNivelAparicion() { return nivelAparicion; }
 
     public static void setVidaBase(int v) { vidaBase = v; }
 

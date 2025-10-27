@@ -6,6 +6,8 @@ package com.mycompany.thewalkingtec;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
+
 
 
 /**
@@ -237,9 +239,22 @@ private void colocarSegunSeleccion(int f, int c) {
         nuevo = new Reliquia();
     } 
     else if (togDefensa.isSelected()) {
-        if (mapaObjetos[f][c] instanceof Reliquia) return;
-        nuevo = new Defensa();
-    } 
+    if (mapaObjetos[f][c] instanceof Reliquia) return;
+
+    int defensasActuales = contarDefensas();
+    int maxDefensas = jugador.getCapacidadDefensas(); 
+
+    if (defensasActuales >= maxDefensas) {
+        JOptionPane.showMessageDialog(this,
+            "⚠️ Has alcanzado el límite de defensas para este nivel (" + maxDefensas + ").",
+            "Límite alcanzado",
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    nuevo = new Defensa();
+}
+
     else if (togArmas.isSelected()) {
         if (mapaObjetos[f][c] instanceof Reliquia) return;
 
@@ -295,9 +310,15 @@ private void colocarSegunSeleccion(int f, int c) {
         b.setBackground(nuevo.getColor());
         b.repaint();
         b.revalidate();
+        actualizarContadorDefensas();
     }
 }
 
+private void actualizarContadorDefensas() {
+    int actuales = contarDefensas();
+    int max = jugador.getCapacidadDefensas();
+    lblContadorDefensas.setText("Defensas: " + actuales + " / " + max);
+}
 
 
 
@@ -349,52 +370,188 @@ private void limpiarMapa() {
     }
     colocarReliquiaCentro();
 }
+private int contarZombies() {
+    int total = 0;
+    for (int f = 0; f < TAM; f++)
+        for (int c = 0; c < TAM; c++)
+            if (mapaObjetos[f][c] instanceof Zombie)
+                total++;
+    return total;
+}
+
 private void generarZombies() {
+    for (int f = 0; f < TAM; f++) {
+    for (int c = 0; c < TAM; c++) {
+        if (mapaObjetos[f][c] instanceof Zombie) return;
+    }
+}
     int nivel = jugador.getNivelActual();
-    int cantidad = 5 + nivel;
+    int capacidad = 20 + (nivel - 1) * 5; // mismos espacios que el fuerte
     java.util.Random random = new java.util.Random();
 
-    for (int i = 0; i < cantidad; i++) {
+    java.util.List<Integer> tiposDisponibles = new java.util.ArrayList<>();
+    if (nivel >= ZombieContacto.getNivelAparicion()) tiposDisponibles.add(0);
+    if (nivel >= ZombieMediano.getNivelAparicion()) tiposDisponibles.add(1);
+    if (nivel >= ZombieAereo.getNivelAparicion()) tiposDisponibles.add(2);
+    if (nivel >= ZombieChoque.getNivelAparicion()) tiposDisponibles.add(3);
+
+    if (tiposDisponibles.isEmpty()) {
+        System.out.println("⚠️ No hay tipos de zombies disponibles para este nivel.");
+        return;
+    }
+
+    int creados = 0;
+    int intentos = 0;
+
+    while (creados < capacidad && intentos < capacidad * 10) {
+        intentos++;
+
         int fila, col;
         int lado = random.nextInt(4);
+
+        // Zombies aparecen solo en los bordes
         if (lado == 0) { fila = 0; col = random.nextInt(TAM); }
         else if (lado == 1) { fila = TAM - 1; col = random.nextInt(TAM); }
         else if (lado == 2) { fila = random.nextInt(TAM); col = 0; }
         else { fila = random.nextInt(TAM); col = TAM - 1; }
 
-        // seleccionar tipo permitido
-        Zombie z;
-        if (nivel < 3) z = new ZombieContacto(fila, col, mapaObjetos, celdas, TAM);
-        else if (nivel < 5) z = random.nextBoolean()
-                ? new ZombieContacto(fila, col, mapaObjetos, celdas, TAM)
-                : new ZombieAereo(fila, col, mapaObjetos, celdas, TAM);
-        else if (nivel < 7) {
-            int tipo = random.nextInt(3);
-            z = switch (tipo) {
-                case 0 -> new ZombieContacto(fila, col, mapaObjetos, celdas, TAM);
-                case 1 -> new ZombieAereo(fila, col, mapaObjetos, celdas, TAM);
-                default -> new ZombieMediano(fila, col, mapaObjetos, celdas, TAM);
-            };
-        } else {
-            int tipo = random.nextInt(4);
-            z = switch (tipo) {
-                case 0 -> new ZombieContacto(fila, col, mapaObjetos, celdas, TAM);
-                case 1 -> new ZombieAereo(fila, col, mapaObjetos, celdas, TAM);
-                case 2 -> new ZombieMediano(fila, col, mapaObjetos, celdas, TAM);
-                default -> new ZombieChoque(fila, col, mapaObjetos, celdas, TAM);
-            };
-        }
+        // Evitar superposición
+        if (mapaObjetos[fila][col] != null) continue;
+
+        int tipo = tiposDisponibles.get(random.nextInt(tiposDisponibles.size()));
+        Zombie z = switch (tipo) {
+            case 0 -> new ZombieContacto(100, 1, nivel, fila, col, mapaObjetos, celdas, TAM);
+            case 1 -> new ZombieMediano(100, 1, nivel, fila, col, mapaObjetos, celdas, TAM);
+            case 2 -> new ZombieAereo(100, 1, nivel, fila, col, mapaObjetos, celdas, TAM);
+            default -> new ZombieChoque(100, 1, nivel, fila, col, mapaObjetos, celdas, TAM);
+        };
 
         mapaObjetos[fila][col] = z;
-        JButton b = celdas[fila][col];
-        b.setText(String.valueOf(z.getSimbolo()));
-        b.setBackground(z.getColor());
-
+        celdas[fila][col].setText(String.valueOf(z.getSimbolo()));
+        celdas[fila][col].setBackground(z.getColor());
         Thread hilo = new Thread(z);
         hilo.start();
         hilosZombies.add(hilo);
+
+        creados++;
+    }
+
+    System.out.println("Zombies normales generados: " + creados + " (nivel " + nivel + ")");
+
+    File carpetaZombies = new File("C:\\Users\\gabos\\OneDrive\\Documentos\\NetBeansProjects\\The-Walking-TEC\\TheWalkingTEC\\Zombies");
+    java.util.ArrayList<ComponenteConfig> zombiesJSON = GestorJSON.cargarZombiesDisponibles(carpetaZombies, nivel);
+
+    if (zombiesJSON != null && !zombiesJSON.isEmpty()) {
+        System.out.println("Agregando zombies personalizados desde JSON: " + zombiesJSON.size());
+        int agregados = 0;
+
+        for (ComponenteConfig cfg : zombiesJSON) {
+            if (cfg.nivelAparicion > nivel) continue;
+
+            int fila, col, intentosJson = 0;
+            do {
+                fila = random.nextInt(TAM);
+                col = random.nextInt(TAM);
+                intentosJson++;
+            } while (mapaObjetos[fila][col] != null && intentosJson < 50);
+
+            if (mapaObjetos[fila][col] != null) continue;
+
+            Army nuevo = crearArmaDesdeConfig(cfg, fila, col);
+            if (nuevo instanceof Zombie z) {
+                mapaObjetos[fila][col] = z;
+                celdas[fila][col].setText(String.valueOf(z.getSimbolo()));
+                celdas[fila][col].setBackground(z.getColor());
+                new Thread(z).start();
+                agregados++;
+            }
+        }
+
+        System.out.println("Zombies personalizados agregados: " + agregados);
+    } else {
+        System.out.println("️ No se encontraron zombies personalizados para nivel " + nivel + ".");
+    }
+
+    System.out.println(" Total zombies en el mapa: " + contarZombies());
+}
+
+private boolean hayReliquia() {
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            Army obj = mapaObjetos[f][c];
+            if (obj instanceof Reliquia && obj.estaVivo()) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+private void iniciarMonitorDeReliquia() {
+    new Thread(() -> {
+        try {
+            while (true) {
+                Thread.sleep(500); // revisar cada medio segundo
+
+                if (!hayReliquia()) {
+                    SwingUtilities.invokeLater(() -> gameOver());
+                    break;
+                }
+            }
+        } catch (InterruptedException ignored) {}
+    }).start();
+}
+private void gameOver() {
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            Army obj = mapaObjetos[f][c];
+            if (obj instanceof Zombie z) {
+                z.detener();
+            }
+        }
+    }
+
+    modoBatalla = false;
+
+    int opcion = JOptionPane.showOptionDialog(
+        this,
+        " ¡La reliquia ha sido destruida!\n\n¿Deseas volver a intentar el nivel o avanzar al siguiente?",
+        "Fin del juego",
+        JOptionPane.YES_NO_CANCEL_OPTION,
+        JOptionPane.ERROR_MESSAGE,
+        null,
+        new Object[]{"🔁 Reintentar nivel", "➡️ Siguiente nivel", "❌ Salir"},
+        " Reintentar nivel"
+    );
+
+    if (opcion == 0) { 
+        JOptionPane.showMessageDialog(this, "Reiniciando nivel " + jugador.getNivelActual() + "...");
+        limpiarZombiesAnteriores();
+        limpiarMapa();
+        colocarReliquiaCentro();
+        refrescarMapaVisual();
+    } 
+    else if (opcion == 1) {
+        siguienteNivel();
+    } 
+    else {
+        JOptionPane.showMessageDialog(this, "Gracias por jugar The Walking TEC 🧟‍♂️");
+        System.exit(0);
     }
 }
+
+private int contarDefensas() {
+    int total = 0;
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            if (mapaObjetos[f][c] instanceof Defensa) {
+                total++;
+            }
+        }
+    }
+    return total;
+}
+
+
 
 private void activarArmas() {
     for (int f = 0; f < TAM; f++) {
@@ -445,6 +602,69 @@ private void aumentarDificultad() {
 
     System.out.println(" Nivel " + nivel + ": zombies más fuertes, armas más potentes.");
 }
+private void limpiarZombiesAnteriores() {
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            if (mapaObjetos[f][c] instanceof Zombie z) {
+                z.detener(); // pone activo=false
+            }
+        }
+    }
+
+    for (Thread t : hilosZombies) {
+        if (t != null && t.isAlive()) {
+            t.interrupt();
+            try { t.join(100); } catch (InterruptedException ignored) {}
+        }
+    }
+    hilosZombies.clear();
+
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            if (mapaObjetos[f][c] instanceof Zombie) {
+                mapaObjetos[f][c] = null;
+                celdas[f][c].setText("");
+                celdas[f][c].setBackground(Color.WHITE);
+            }
+        }
+    }
+}
+
+private void siguienteNivel() {
+    limpiarZombiesAnteriores();
+
+    jugador.setNivelActual(jugador.getNivelActual() + 1);
+    int nivel = jugador.getNivelActual();
+    System.out.println("🚀 Avanzando al nivel " + nivel);
+
+    for (int f = 0; f < TAM; f++) {
+        for (int c = 0; c < TAM; c++) {
+            mapaObjetos[f][c] = null;
+            celdas[f][c].setText("");
+            celdas[f][c].setBackground(Color.WHITE);
+        }
+    }
+
+    int centro = TAM / 2;
+    Reliquia r = new Reliquia();
+    mapaObjetos[centro][centro] = r;
+    celdas[centro][centro].setText(String.valueOf(r.getSimbolo()));
+    celdas[centro][centro].setBackground(r.getColor());
+
+    modoBatalla = false;
+    refrescarMapaVisual();
+    actualizarContadorDefensas();
+
+    iniciarMonitorDeReliquia();
+
+    JOptionPane.showMessageDialog(
+        this,
+        "🔥 Nivel " + nivel + " iniciado 🔥",
+        "Nuevo nivel",
+        JOptionPane.INFORMATION_MESSAGE
+    );
+}
+
 
 
 
@@ -471,6 +691,8 @@ private void aumentarDificultad() {
         btnZombies = new javax.swing.JButton();
         btnGuardarPartida = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        btnSigNivel = new javax.swing.JButton();
+        lblContadorDefensas = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -531,27 +753,29 @@ private void aumentarDificultad() {
             }
         });
 
-        jButton1.setText("jButton1");
+        jButton1.setText("Resultados");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
+        btnSigNivel.setText("Siguiente Nivel");
+        btnSigNivel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSigNivelActionPerformed(evt);
+            }
+        });
+
+        lblContadorDefensas.setText("Defensas: 0 / 0");
+
         javax.swing.GroupLayout panelControlesLayout = new javax.swing.GroupLayout(panelControles);
         panelControles.setLayout(panelControlesLayout);
         panelControlesLayout.setHorizontalGroup(
             panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelControlesLayout.createSequentialGroup()
-                .addContainerGap(21, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelControlesLayout.createSequentialGroup()
-                        .addGroup(panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(togBorrar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(togDefensa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(togReliquia, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(togArmas, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelControlesLayout.createSequentialGroup()
                         .addComponent(btnGuardarPartida)
                         .addContainerGap())
@@ -561,14 +785,28 @@ private void aumentarDificultad() {
                                 .addComponent(btnZombies)
                                 .addComponent(btnLimpiar))
                             .addGroup(panelControlesLayout.createSequentialGroup()
-                                .addComponent(jButton1)
+                                .addGroup(panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(btnSigNivel)
+                                    .addComponent(jButton1))
                                 .addGap(4, 4, 4)))
-                        .addGap(21, 21, 21))))
+                        .addGap(21, 21, 21))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelControlesLayout.createSequentialGroup()
+                        .addGroup(panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(togBorrar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(togDefensa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(togReliquia, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(togArmas, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelControlesLayout.createSequentialGroup()
+                        .addComponent(lblContadorDefensas, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         panelControlesLayout.setVerticalGroup(
             panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelControlesLayout.createSequentialGroup()
-                .addGap(43, 43, 43)
+                .addGap(9, 9, 9)
+                .addComponent(lblContadorDefensas, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(togDefensa)
                 .addGap(18, 18, 18)
                 .addComponent(togBorrar)
@@ -580,7 +818,9 @@ private void aumentarDificultad() {
                 .addComponent(btnZombies)
                 .addGap(18, 18, 18)
                 .addComponent(btnLimpiar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 155, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 91, Short.MAX_VALUE)
+                .addComponent(btnSigNivel)
+                .addGap(37, 37, 37)
                 .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnGuardarPartida)
@@ -611,10 +851,6 @@ private void aumentarDificultad() {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void togReliquiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_togReliquiaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_togReliquiaActionPerformed
-
     private void togDefensaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_togDefensaActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_togDefensaActionPerformed
@@ -631,12 +867,13 @@ private void aumentarDificultad() {
         bloquearEdicion(true);
         generarZombies();
         activarArmas();
+        iniciarMonitorDeReliquia();
     new Thread(() -> {
         try {
             while (true) {
                 Thread.sleep(2000); 
                 if (!hayZombiesVivos()) {
-                    nivelCompletado();
+                    siguienteNivel();
                     break;
                 }
             }
@@ -666,14 +903,24 @@ private void aumentarDificultad() {
         mostrarResumenFinal();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void togReliquiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_togReliquiaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_togReliquiaActionPerformed
+
+    private void btnSigNivelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSigNivelActionPerformed
+        siguienteNivel();
+    }//GEN-LAST:event_btnSigNivelActionPerformed
+
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnGuardarPartida;
     private javax.swing.JButton btnLimpiar;
+    private javax.swing.JButton btnSigNivel;
     private javax.swing.JButton btnZombies;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton jButton1;
+    private javax.swing.JLabel lblContadorDefensas;
     private javax.swing.JPanel panelControles;
     private javax.swing.JPanel panelMapa;
     private javax.swing.JToggleButton togArmas;

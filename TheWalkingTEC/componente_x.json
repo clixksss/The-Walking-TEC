@@ -1,0 +1,13 @@
+{
+    "id": "f0b765fc-18fe-48c1-94ef-75b4de8bd626",
+    "nombre": "321",
+    "imagenIdle": "",
+    "imagenAttack": "",
+    "vidaMax": 3,
+    "golpesPorSegundo": 1,
+    "espacios": 1,
+    "nivelAparicion": 1,
+    "nivel": 1,
+    "_class": "Component_creator.Contacto",
+    "tipo": 0
+  }

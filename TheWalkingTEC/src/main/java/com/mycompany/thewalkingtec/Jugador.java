@@ -22,6 +22,9 @@ public class Jugador implements Serializable {
     public String getNombre() { return nombre; }
     public int getNivelActual() { return nivelActual; }
     public void subirNivel() { nivelActual++; }
+    public int getCapacidadDefensas() {
+    return 20 + (nivelActual - 1) * 5;
+    }
 
     public void setNivelActual(int nivel) { this.nivelActual = nivel; }
 }

@@ -1,0 +1,10 @@
+{
+  "id": "z001",
+  "nombre": "Zombie Aereo",
+  "vidaMax": 100,
+  "golpesPorSegundo": 2,
+  "espacios": 1,
+  "nivelAparicion": 1,
+  "_class": "Component_creator.Aereo",
+  "tipo": 1
+}
