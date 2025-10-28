@@ -18,7 +18,7 @@ public class ArmaMultiple extends Arma {
         super(20, 6, new Color(170, 100, 255), 'X', f, c, m, celdas, tam, 4);
     }
     public ArmaMultiple(int vida,int dano,int rango,int f, int c, Army[][] m, JButton[][] celdas, int tam) {
-        super(vida, dano, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, rango);
+        super(vida, dano, new Color(161, 130, 98), 'X', f, c, m, celdas, tam, rango);
     }
 
     @Override

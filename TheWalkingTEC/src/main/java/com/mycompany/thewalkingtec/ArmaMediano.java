@@ -16,7 +16,7 @@ public class ArmaMediano extends Arma {
         super(15, 8, new Color(240, 220, 70), 'M', f, c, m, celdas, tam, 3);
     }
     public ArmaMediano(int vida,int dano,int rango,int f, int c, Army[][] m, JButton[][] celdas, int tam) {
-        super(vida, dano, new Color(120, 180, 255), 'A', f, c, m, celdas, tam, rango);
+        super(vida, dano, new Color(87, 35, 100), 'M', f, c, m, celdas, tam, rango);
     }
 
     @Override

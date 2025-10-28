@@ -514,30 +514,37 @@ private void gameOver() {
 
     int opcion = JOptionPane.showOptionDialog(
         this,
-        " ¡La reliquia ha sido destruida!\n\n¿Deseas volver a intentar el nivel o avanzar al siguiente?",
-        "Fin del juego",
+        " ¡La reliquia ha sido destruida!\n\n¿Qué deseas hacer?",
+        "Fin del nivel",
         JOptionPane.YES_NO_CANCEL_OPTION,
         JOptionPane.ERROR_MESSAGE,
         null,
-        new Object[]{"🔁 Reintentar nivel", "➡️ Siguiente nivel", "❌ Salir"},
+        new Object[]{"Reintentar nivel", "➡️ Siguiente nivel", "❌ Salir"},
         " Reintentar nivel"
     );
 
-    if (opcion == 0) { 
-        JOptionPane.showMessageDialog(this, "Reiniciando nivel " + jugador.getNivelActual() + "...");
-        limpiarZombiesAnteriores();
-        limpiarMapa();
-        colocarReliquiaCentro();
-        refrescarMapaVisual();
-    } 
-    else if (opcion == 1) {
-        siguienteNivel();
-    } 
-    else {
-        JOptionPane.showMessageDialog(this, "Gracias por jugar The Walking TEC 🧟‍♂️");
-        System.exit(0);
+    switch (opcion) {
+        case 0 -> { 
+            int nivelActual = jugador.getNivelActual(); 
+            JOptionPane.showMessageDialog(this, "Reiniciando nivel " + nivelActual + "...");
+            limpiarZombiesAnteriores();
+            limpiarMapa();
+            jugador.setNivelActual(nivelActual); 
+            colocarReliquiaCentro();
+            refrescarMapaVisual();
+        }
+
+        case 1 -> { 
+            siguienteNivel(); 
+        }
+
+        default -> { 
+            JOptionPane.showMessageDialog(this, "Gracias por jugar The Walking TEC️");
+            System.exit(0);
+        }
     }
 }
+
 
 private int contarDefensas() {
     int total = 0;
@@ -578,30 +585,9 @@ private boolean hayZombiesVivos() {
     }
     return false;
 }
-private void nivelCompletado() {
-    jugador.subirNivel();
-    JOptionPane.showMessageDialog(this,
-        "¡Nivel superado!\nAvanzas al nivel " + jugador.getNivelActual());
-    mostrarResumenFinal();
-    GestorJSON.guardarPartida(jugador, mapaObjetos, TAM);
 
-    aumentarDificultad();
 
-    limpiarMapa();
 
-    bloquearEdicion(false);
-}
-
-private void aumentarDificultad() {
-    int nivel = jugador.getNivelActual();
-
-    Zombie.setVidaBase(100 + nivel * 20);
-    Zombie.setDañoBase(5 + nivel * 2);
-
-    Arma.setDañoBase(5 + nivel * 3);
-
-    System.out.println(" Nivel " + nivel + ": zombies más fuertes, armas más potentes.");
-}
 private void limpiarZombiesAnteriores() {
     for (int f = 0; f < TAM; f++) {
         for (int c = 0; c < TAM; c++) {
@@ -868,17 +854,6 @@ private void siguienteNivel() {
         generarZombies();
         activarArmas();
         iniciarMonitorDeReliquia();
-    new Thread(() -> {
-        try {
-            while (true) {
-                Thread.sleep(2000); 
-                if (!hayZombiesVivos()) {
-                    siguienteNivel();
-                    break;
-                }
-            }
-        } catch (InterruptedException ignored) {}
-    }).start();
     }//GEN-LAST:event_btnZombiesActionPerformed
 
     private void btnGuardarPartidaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarPartidaActionPerformed
